@@ -1,0 +1,38 @@
+version: "3.8"
+# サービス群
+services:
+  api-server:
+    container_name: go-app
+    build: .
+    env_file: ./db-api.env
+    tty: true
+    volumes:
+      - .:/app
+    ports:
+      - 8888:8888
+    environment:
+      - PMA_HOST=db:3309
+    depends_on:
+      - "db"
+  db:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: ${ROOTPASS}
+      MYSQL_DATABASE: ${DATABASE}
+      MYSQL_USER: ${USERNAME}
+      MYSQL_PASSWORD: ${USERPASS}
+      MYSQL_TCP_PORT: 3309
+      TZ: 'Asia/Tokyo'
+    command: mysqld --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - ./my.cnf:/etc/mysql/conf.d/my.cnf
+    ports:
+      - 3309:3309
+    expose:
+      - 3309
+    tty: true
+    restart: always
+volumes:
+  mysql-data:
+    driver: local
